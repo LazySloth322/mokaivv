@@ -1,0 +1,8 @@
+{
+  "id": "r3m0k5",
+  "datetime": "2025-09-07T11:11:11+03:00",
+  "sender": "no-reply@streaming.example",
+  "subject": "Счёт за подписку — сентябрь.",
+  "attachment": null,
+  "text": "Здравствуйте. Списана оплата за подписку на сервис «StreamPlus» за сентябрь. Если вы хотите просмотреть историю платежей — https://streaming.example/account/billing. С уважением, команда StreamPlus."
+}

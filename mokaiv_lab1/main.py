@@ -7,28 +7,28 @@
 
 import os
 import json
+import dns.resolver
 
 def getFileNames(dirPath):
     fileNames = os.listdir(dirPath)
     for i in range(len(fileNames)):
         fileNames[i]=dirPath+fileNames[i]
-    print(fileNames)
+    #print(fileNames)
 
     return fileNames
 
 def getInfo(fileName, mode=0): #0=base; 1=check
     with open(fileName, "r", encoding="utf-8") as file:
-        data = json.load(file)
-
         if mode:
             reference = ["id","datetime","sender","subject","attachment","text"]
-            dataKeys = list(data.keys())
             #print(dataKeys)
             try:
+                data = json.load(file)
+                dataKeys = list(data.keys())
                 for i in range(len(reference)):
                     if(dataKeys[i]!=reference[i]): return 1
             except Exception as e:
-                print(e)
+                #print(e)
                 return 1
             return 0
         elif not mode:
@@ -46,12 +46,30 @@ def validateEmail(fileNames):
     #print(validList)
     return validList
 
+def getSPF(domain):
+    for rec in dns.resolver.resolve(domain, "TXT"):
+        txt = b"".join(rec.strings).decode()
+        if txt.startswith("v=spf1"):
+            return txt
+    return None
+
 
 def main(dirPath):
     fileNames = getFileNames(dirPath)
+    totalAmount = len(fileNames)
+
     validMailList = validateEmail(fileNames)
+    validAmount = len(validMailList)
 
     print(validMailList)
+
+    for i in range(validAmount):
+        with open(validMailList[i], "r", encoding="utf-8") as file:
+            data = json.load(file)
+            try:
+                print(getSPF(data["sender"].split("@")[1]))
+            except Exception as e:
+                print(e)
 
 
 if __name__ == "__main__":

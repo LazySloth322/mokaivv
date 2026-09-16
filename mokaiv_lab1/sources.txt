@@ -1,0 +1,2 @@
+https://www.cloudflare.com/learning/email-security/dmarc-dkim-spf/
+https://dev.to/devyjones/how-to-check-spf-dkim-and-dmarc-records-in-python-143

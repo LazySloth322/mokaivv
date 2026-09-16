@@ -1,0 +1,8 @@
+{
+  "id": "i4f5g6",
+  "datetime": "2025-09-11T17:05:33+03:00",
+  "sender": "security@google-update.com",
+  "subject": "Подтвердите вход в аккаунт",
+  "attachment": null,
+  "text": "Мы зафиксировали вход с нового устройства. Подтвердите вход по ссылке: http://google-security-verify.ru. Иначе аккаунт будет временно заблокирован."
+}

@@ -1,0 +1,8 @@
+{
+  "id": "q2n3o4",
+  "datetime": "2025-09-07T16:15:50+03:00",
+  "sender": "noreply@amazon-security.ru",
+  "subject": "Подтверждение платежной информации",
+  "attachment": null,
+  "text": "Ваш платёж не может быть обработан. Подтвердите данные по ссылке: http://amazon-payment-verify.ru. В противном случае заказ будет отменён."
+}
