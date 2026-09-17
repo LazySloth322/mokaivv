@@ -1,8 +1,8 @@
 # TODO
 # 1. check if email is valid (contain all necessary fields)
-# 2. check spf
-# 3. check dkim
-# 4. mark as phishing (dmarc)
+# 2. check spf (not working)
+# 3. check if email contain http web links and sus words
+# 4. mark as phishing (maybe suspicion coef?)
 # 5. return amount of phishing emails
 
 import os
@@ -32,7 +32,14 @@ def getInfo(fileName, mode=0): #0=base; 1=check
                 return 1
             return 0
         elif not mode:
-            pass
+
+            #get sender link
+            #get subject
+            #get text
+
+            data = json.load(file)
+            print(data["subject"]+"\n"+data["text"])
+
 
 def validateEmail(fileNames):
     validList = []
@@ -63,13 +70,17 @@ def main(dirPath):
 
     print(validMailList)
 
-    for i in range(validAmount):
-        with open(validMailList[i], "r", encoding="utf-8") as file:
-            data = json.load(file)
-            try:
-                print(getSPF(data["sender"].split("@")[1]))
-            except Exception as e:
-                print(e)
+    for mail in validMailList:
+        getInfo(mail)
+        #call for phishing check
+
+    # for i in range(validAmount):
+    #     with open(validMailList[i], "r", encoding="utf-8") as file:
+    #         data = json.load(file)
+    #         try:
+    #             print(getSPF(data["sender"].split("@")[1]))
+    #         except Exception as e:
+    #             print(e)
 
 
 if __name__ == "__main__":
