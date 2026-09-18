@@ -1,9 +1,14 @@
 # TODO
 # 1. check if email is valid (contain all necessary fields)
 # 2. check spf (not working)
-# 3. check if email contain http web links and sus words
-# 4. mark as phishing (maybe suspicion coef?)
-# 5. return amount of phishing emails
+# 3. mark as phishing (suspicion coef: 0-valid, 0<...<2-sus, >2 phishing)
+#   3.1 no link in mail +=0
+#   3.2 https link +=1
+#   3.3 http link +=2
+#   3.4 sender domain doesnt equal link in mail +=1
+#   3.5 key words? (ограничен, блокировке/заблокирован, заморожен, восстановить, отменен, ответить) +=1
+#   3.6 there is an attachment +=1
+# 4. return amount of phishing emails
 
 import os
 import json
@@ -32,13 +37,8 @@ def getInfo(fileName, mode=0): #0=base; 1=check
                 return 1
             return 0
         elif not mode:
-
-            #get sender link
-            #get subject
-            #get text
-
             data = json.load(file)
-            print(data["subject"]+"\n"+data["text"])
+            return [data["sender"],data["text"], data["attachment"]]
 
 
 def validateEmail(fileNames):
@@ -60,6 +60,42 @@ def getSPF(domain):
             return txt
     return None
 
+def verifyEmail(validMailList):
+    result={"clean":[],"sus":[],"phishing":[]}
+    susWords = ["ограничен","блокиров","заморожен","восстановит","отменен","ответить","ответьте"]
+    for mail in validMailList:
+        score = 0
+        info = getInfo(mail)
+
+        containsURL = False
+
+        if ("http" in info[1]):
+            containsURL=True
+            if ("https" in info[1]):
+                score+=1
+            else:
+                score+=2
+
+        if containsURL:
+            senderURL = info[0].split("@")[1]
+            if not (senderURL in info[1]):
+                score+=1
+
+        for word in susWords:
+            if (word in info[1]):
+                score+=1
+                break
+
+        if info[2]:
+            score+=1
+
+        if score==0:
+            result["clean"].append(mail)
+        elif (score>0 and score<2):
+            result["sus"].append(mail)
+        elif (score>2):
+            result["phishing"].append(mail)
+    return result
 
 def main(dirPath):
     fileNames = getFileNames(dirPath)
@@ -68,19 +104,16 @@ def main(dirPath):
     validMailList = validateEmail(fileNames)
     validAmount = len(validMailList)
 
-    print(validMailList)
+    result = verifyEmail(validMailList)
 
-    for mail in validMailList:
-        getInfo(mail)
-        #call for phishing check
+    print("Valid emails: ", validAmount, " (total ",totalAmount,")")
+    print("Clean emails: ",len(result["clean"]))
+    print("Suspicious emails:",len(result["sus"]))
+    print("Phishing emails: ",len(result["phishing"]))
 
-    # for i in range(validAmount):
-    #     with open(validMailList[i], "r", encoding="utf-8") as file:
-    #         data = json.load(file)
-    #         try:
-    #             print(getSPF(data["sender"].split("@")[1]))
-    #         except Exception as e:
-    #             print(e)
+    # print(result["clean"])
+    # print(result["sus"])
+    # print(result["phishing"])
 
 
 if __name__ == "__main__":
