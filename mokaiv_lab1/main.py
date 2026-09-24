@@ -62,12 +62,20 @@ def validateEmail(fileNames):
     #print(validList)
     return validList
 
-def getSPF(domain):
-    for rec in dns.resolver.resolve(domain, "TXT"):
-        txt = b"".join(rec.strings).decode()
-        if txt.startswith("v=spf1"):
-            return txt
-    return None
+def getTXT(domain):
+    #print(domain)
+    try:
+        answers = dns.resolver.resolve(domain, "TXT")
+        records = []
+        for record in answers:
+            text = b"".join(record.strings).decode("utf-8", errors="replace")
+            records.append(text)
+        return records
+    except (dns.resolver.NXDOMAIN,
+            dns.resolver.NoAnswer,
+            dns.resolver.NoNameservers,
+            dns.exception.Timeout,):
+        return False
 
 def verifyEmail(validMailList):
     result={"clean":[],"sus":[],"phishing":[]}
@@ -75,7 +83,7 @@ def verifyEmail(validMailList):
     for mail in validMailList:
         score = 0
         info = getInfo(mail)
-
+        senderURL = info[0].split("@")[1]
         containsURL = False
 
         if ("http" in info[1]):
@@ -86,7 +94,6 @@ def verifyEmail(validMailList):
                 score+=2
 
         if containsURL:
-            senderURL = info[0].split("@")[1]
             if not (senderURL in info[1]):
                 score+=1
 
@@ -98,7 +105,14 @@ def verifyEmail(validMailList):
         if info[2]:
             score+=1
 
-        if score==0:
+        text = getTXT(senderURL)
+        if text:
+            k=0
+            for string in text:
+                if ("v=DMARC" or "v=spf1") in string: k+=1
+            if k>0: score-=1
+
+        if score<=0:
             result["clean"].append(mail)
         elif (score>0 and score<2):
             result["sus"].append(mail)
@@ -109,10 +123,11 @@ def verifyEmail(validMailList):
 def main():
     print("Path to .zip file:")
     archivePath = str(input())
+    #archivePath = "./letters.zip"
     print("")
 
     try:
-        dirPath = unzip(archivePath)
+        dirPath = unzip(archivePath) #"./test/"
         #print(dirPath)
         fileNames = getFileNames(dirPath)
         totalAmount = len(fileNames)
@@ -131,7 +146,7 @@ def main():
     print("Suspicious emails:",len(result["sus"]))
     print("Phishing emails: ",len(result["phishing"]))
 
-    #print(result["clean"])
+    # print(result["clean"])
     # print(result["sus"])
     # print(result["phishing"])
 
